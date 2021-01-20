@@ -51,23 +51,38 @@ export default function TableOfContentsEdit( {
 
 	const pageIndex = useSelect(
 		( select ) => {
-			const { getBlockIndex, getBlockName, getBlockOrder } = select(
-				'core/block-editor'
-			);
+			const {
+				getBlockAttributes,
+				getBlockIndex,
+				getBlockName,
+				getBlockOrder,
+			} = select( 'core/block-editor' );
 
 			const blockIndex = getBlockIndex( clientId );
 			const blockOrder = getBlockOrder();
 
 			// Calculate which page the block will appear in on the front-end by
-			// counting how many core/nextpage blocks precede it.
-			// Unfortunately, this does not account for <!--nextpage--> tags in
-			// other blocks, so in certain edge cases, this will calculate the
-			// wrong page number. Thankfully, this issue only affects the editor
-			// implementation.
+			// counting how many <!--nextpage--> tags precede it.
+			// Unfortunately, this implementation only accounts for Page Break and
+			// Classic blocks, so if there are any <!--nextpage--> tags in any
+			// other block, they won't be counted. This will result in the table
+			// of contents showing headings from the wrong page if
+			// onlyIncludeCurrentPage === true. Thankfully, this issue only
+			// affects the editor implementation.
 			let page = 1;
 			for ( let i = 0; i < blockIndex; i++ ) {
-				if ( getBlockName( blockOrder[ i ] ) === 'core/nextpage' ) {
+				const blockName = getBlockName( blockOrder[ i ] );
+				if ( blockName === 'core/nextpage' ) {
 					page++;
+				} else if ( blockName === 'core/freeform' ) {
+					// Count the page breaks inside the Classic block.
+					const pageBreaks = getBlockAttributes(
+						blockOrder[ i ]
+					).content?.match( /<!--nextpage-->/g );
+
+					if ( pageBreaks !== null && pageBreaks !== undefined ) {
+						page += pageBreaks.length;
+					}
 				}
 			}
 
