@@ -107,32 +107,14 @@ function block_core_table_of_contents_get_headings_from_content(
 				}
 			}
 
-			switch ( $heading->nodeName ) {
-				case 'h1':
-					$level = 1;
-					break;
-				case 'h2':
-					$level = 2;
-					break;
-				case 'h3':
-					$level = 3;
-					break;
-				case 'h4':
-					$level = 4;
-					break;
-				case 'h5':
-					$level = 5;
-					break;
-				case 'h6':
-					$level = 6;
-					break;
-			}
-
 			return array(
+				'page'    => $headings_page,
+				// A little hacky, but since we know at this point that the tag will
+				// be an h1-h6, we can just grab the 2nd character of the tag name
+				// and convert it to an integer. Should be faster than conditionals.
+				'level'   => (int) $heading->nodeName[1],
 				'anchor'  => $anchor,
 				'content' => $heading->textContent,
-				'level'   => $level,
-				'page'    => $headings_page,
 			);
 		},
 		$headings

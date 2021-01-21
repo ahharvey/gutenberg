@@ -45,9 +45,10 @@ export default function TableOfContentsEdit( {
 	// Local state; not saved to block attributes. The saved block is dynamic and uses PHP to generate its content.
 	const [ headings, setHeadings ] = useState( [] );
 
-	const postContent = useSelect( ( select ) => {
-		return select( 'core/editor' ).getEditedPostContent();
-	}, [] );
+	const postContent = useSelect(
+		( select ) => select( 'core/editor' ).getEditedPostContent(),
+		[]
+	);
 
 	const pageIndex = useSelect(
 		( select ) => {

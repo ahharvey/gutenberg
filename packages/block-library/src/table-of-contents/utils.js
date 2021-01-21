@@ -27,30 +27,14 @@ export function getHeadingsFromHeadingElements( headingElements ) {
 			anchor = `#${ firstId }`;
 		}
 
-		let level;
-
-		switch ( heading.tagName ) {
-			case 'H1':
-				level = 1;
-				break;
-			case 'H2':
-				level = 2;
-				break;
-			case 'H3':
-				level = 3;
-				break;
-			case 'H4':
-				level = 4;
-				break;
-			case 'H5':
-				level = 5;
-				break;
-			case 'H6':
-				level = 6;
-				break;
-		}
-
-		return { anchor, content: heading.textContent, level };
+		return {
+			// A little hacky, but since we know at this point that the tag will
+			// be an H1-H6, we can just grab the 2nd character of the tag name and
+			// convert it to an integer. Should be faster than conditionals.
+			level: parseInt( heading.tagName[ 1 ], 10 ),
+			anchor,
+			content: heading.textContent,
+		};
 	} );
 }
 
