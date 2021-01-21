@@ -133,7 +133,7 @@ export default function TableOfContentsEdit( {
 	);
 
 	// If there are no headings or the only heading is empty.
-	if ( headings.length === 0 || headings[ 0 ].content === '' ) {
+	if ( headings.length === 0 ) {
 		return (
 			<div { ...blockProps }>
 				{ inspectorControls }

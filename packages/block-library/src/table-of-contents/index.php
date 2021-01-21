@@ -114,10 +114,10 @@ function block_core_table_of_contents_get_headings_from_content(
 
 	$xpath = new DOMXPath( $doc );
 
-	// Get all heading elements in the post content.
+	// Get all non-empty heading elements in the post content.
 	$headings = iterator_to_array(
 		$xpath->query(
-			'//*[self::h1 or self::h2 or self::h3 or self::h4 or self::h5 or self::h6]'
+			'//*[self::h1 or self::h2 or self::h3 or self::h4 or self::h5 or self::h6][text()!=""]'
 		)
 	);
 
@@ -245,10 +245,6 @@ function block_core_table_of_contents_linear_to_nested_heading_list(
 	$nested_heading_list = array();
 
 	foreach ( $heading_list as $key => $heading ) {
-		if ( ! isset( $heading['content'] ) ) {
-			break;
-		}
-
 		// Make sure we are only working with the same level as the first
 		// iteration in our set.
 		if ( $heading['level'] === $heading_list[0]['level'] ) {

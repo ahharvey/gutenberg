@@ -77,7 +77,7 @@ export function getHeadingsFromContent( content ) {
 	}
 
 	const headingElements = tempPostContentDOM.querySelectorAll(
-		'h1, h2, h3, h4, h5, h6'
+		'h1:not(:empty), h2:not(:empty), h3:not(:empty), h4:not(:empty), h5:not(:empty), h6:not(:empty)'
 	);
 
 	return getHeadingsFromHeadingElements( headingElements );
