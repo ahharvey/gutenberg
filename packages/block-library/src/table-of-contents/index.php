@@ -6,41 +6,6 @@
  */
 
 /**
- * Helper function to remove the children of a node.
- *
- * @access private
- *
- * @param object $node The node to remove children from.
- */
-function block_core_table_of_contents_delete_node_children( $node ) {
-	/* phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase */
-	// Disabled because of PHP DOMDoument and DOMXPath APIs using camelCase.
-
-	// Whenever the 1st child node is removed, the 2nd one becomes the 1st.
-	while ( isset( $node->firstChild ) ) {
-		block_core_table_of_contents_delete_node_children( $node->firstChild );
-		$node->removeChild( $node->firstChild );
-	}
-	/* phpcs:enable */
-}
-
-/**
- * Helper function to remove a node and all of its children.
- *
- * @access private
- *
- * @param object $node The node to remove along with its children.
- */
-function block_core_table_of_contents_delete_node_and_children( $node ) {
-	/* phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase */
-	// Disabled because of PHP DOMDoument and DOMXPath APIs using camelCase.
-
-	block_core_table_of_contents_delete_node_children( $node );
-	$node->parentNode->removeChild( $node );
-	/* phpcs:enable */
-}
-
-/**
  * Extracts heading content, anchor, and level from the given post content.
  *
  * @access private
@@ -98,18 +63,16 @@ function block_core_table_of_contents_get_headings_from_content(
 	$document_el = $doc->documentElement;
 
 	// IE11 treats template elements like divs, so to avoid extracting heading
-	// elements from them, we first have to remove the template elements and
-	// their children.
+	// elements from them, we first have to remove them.
 	// We can't use foreach directly on the $templates DOMNodeList because it's a
 	// dynamic list, and removing nodes confuses the foreach iterator. So
-	// instead, we create a static array of the nodes we want to remove and then
-	// iterate over that.
+	// instead, we convert the iterator to an array and then iterate over that.
 	$templates = iterator_to_array(
 		$document_el->getElementsByTagName( 'template' )
 	);
 
 	foreach ( $templates as $template ) {
-		block_core_table_of_contents_delete_node_and_children( $template );
+		$template->parentNode->removeChild( $template );
 	}
 
 	$xpath = new DOMXPath( $doc );
