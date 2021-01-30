@@ -14,28 +14,14 @@
  * @return {WPHeadingData[]} The list of heading parameters.
  */
 export function getHeadingsFromHeadingElements( headingElements ) {
-	return [ ...headingElements ].map( ( heading ) => {
-		let anchor = '';
-
-		if ( heading.hasAttribute( 'id' ) ) {
-			// The id attribute may contain many ids, so just use the first.
-			const firstId = heading
-				.getAttribute( 'id' )
-				.trim()
-				.split( ' ' )[ 0 ];
-
-			anchor = `#${ firstId }`;
-		}
-
-		return {
-			// A little hacky, but since we know at this point that the tag will
-			// be an H1-H6, we can just grab the 2nd character of the tag name and
-			// convert it to an integer. Should be faster than conditionals.
-			level: parseInt( heading.tagName[ 1 ], 10 ),
-			anchor,
-			content: heading.textContent,
-		};
-	} );
+	return [ ...headingElements ].map( ( heading ) => ( {
+		// A little hacky, but since we know at this point that the tag will
+		// be an H1-H6, we can just grab the 2nd character of the tag name and
+		// convert it to an integer. Should be faster than conditionals.
+		level: parseInt( heading.tagName[ 1 ], 10 ),
+		anchor: heading.hasAttribute( 'id' ) ? `#${ heading.id }` : '',
+		content: heading.textContent,
+	} ) );
 }
 
 /**
@@ -57,7 +43,7 @@ export function getHeadingsFromContent( content ) {
 	for ( const template of tempPostContentDOM.querySelectorAll(
 		'template'
 	) ) {
-		tempPostContentDOM.removeChild( template );
+		template.remove();
 	}
 
 	const headingElements = tempPostContentDOM.querySelectorAll(

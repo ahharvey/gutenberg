@@ -60,15 +60,13 @@ function block_core_table_of_contents_get_headings_from_content(
 	// clears any existing errors, which helps avoid a memory leak.
 	libxml_use_internal_errors( false );
 
-	$document_el = $doc->documentElement;
-
 	// IE11 treats template elements like divs, so to avoid extracting heading
 	// elements from them, we first have to remove them.
 	// We can't use foreach directly on the $templates DOMNodeList because it's a
 	// dynamic list, and removing nodes confuses the foreach iterator. So
 	// instead, we convert the iterator to an array and then iterate over that.
 	$templates = iterator_to_array(
-		$document_el->getElementsByTagName( 'template' )
+		$doc->documentElement->getElementsByTagName( 'template' )
 	);
 
 	foreach ( $templates as $template ) {
@@ -92,17 +90,15 @@ function block_core_table_of_contents_get_headings_from_content(
 				$id_attribute = $heading->attributes->getNamedItem( 'id' );
 
 				if ( null !== $id_attribute ) {
-					// The id attribute may contain many ids, so just use the first.
-					$first_id = explode( ' ', trim( $id_attribute->nodeValue ) )[0];
-
+					$id = $id_attribute->nodeValue;
 					if ( $headings_page === $current_page ) {
-						$anchor = '#' . $first_id;
+						$anchor = '#' . $id;
 					} elseif ( 1 !== $headings_page && 1 === $current_page ) {
-						$anchor = './' . $headings_page . '/#' . $first_id;
+						$anchor = './' . $headings_page . '/#' . $id;
 					} elseif ( 1 === $headings_page && 1 !== $current_page ) {
-						$anchor = '../#' . $first_id;
+						$anchor = '../#' . $id;
 					} else {
-						$anchor = '../' . $headings_page . '/#' . $first_id;
+						$anchor = '../' . $headings_page . '/#' . $id;
 					}
 				}
 			}
