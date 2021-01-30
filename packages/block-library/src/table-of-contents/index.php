@@ -168,21 +168,21 @@ function block_core_table_of_contents_get_headings(
 }
 
 /**
- * Converts a flat list of heading parameters to a hierarchical nested list
- * based on each header's immediate parent's level.
+ * Converts a flat list of heading data objects to a hierarchical list based on
+ * heading rank/level.
  *
  * @access private
  *
- * @param array $heading_list Flat list of heading parameters to nest.
+ * @param array $heading_list Flat list of heading data objects.
  * @param int   $index        The current list index.
  *
- * @return array A hierarchical nested list of heading parameters.
+ * @return array A hierarchical list of headings.
  */
-function block_core_table_of_contents_linear_to_nested_heading_list(
+function block_core_table_of_contents_get_hierarchical_heading_list(
 	$heading_list,
 	$index = 0
 ) {
-	$nested_heading_list = array();
+	$hierarchical_heading_list = array();
 
 	foreach ( $heading_list as $key => $heading ) {
 		// Make sure we are only working with the same level as the first
@@ -210,10 +210,10 @@ function block_core_table_of_contents_linear_to_nested_heading_list(
 
 				// Found a child node: Push a new node onto the return array with
 				// children.
-				$nested_heading_list[] = array(
+				$hierarchical_heading_list[] = array(
 					'heading'  => $heading,
 					'index'    => $index + $key,
-					'children' => block_core_table_of_contents_linear_to_nested_heading_list(
+					'children' => block_core_table_of_contents_get_hierarchical_heading_list(
 						array_slice(
 							$heading_list,
 							$key + 1,
@@ -224,7 +224,7 @@ function block_core_table_of_contents_linear_to_nested_heading_list(
 				);
 			} else {
 				// No child node: Push a new node onto the return array.
-				$nested_heading_list[] = array(
+				$hierarchical_heading_list[] = array(
 					'heading'  => $heading,
 					'index'    => $index + $key,
 					'children' => null,
@@ -233,7 +233,7 @@ function block_core_table_of_contents_linear_to_nested_heading_list(
 		}
 	}
 
-	return $nested_heading_list;
+	return $hierarchical_heading_list;
 }
 
 /**
@@ -241,11 +241,11 @@ function block_core_table_of_contents_linear_to_nested_heading_list(
  *
  * @access private
  *
- * @param array $nested_heading_list Nested list of heading data.
+ * @param array $hierarchical_heading_list Hierarchical heading list.
  *
  * @return string The heading list rendered as HTML.
  */
-function block_core_table_of_contents_render_list( $nested_heading_list ) {
+function block_core_table_of_contents_render_list( $hierarchical_heading_list ) {
 	$entry_class = 'wp-block-table-of-contents__entry';
 
 	$child_nodes = array_map(
@@ -276,7 +276,7 @@ function block_core_table_of_contents_render_list( $nested_heading_list ) {
 					: null
 			);
 		},
-		$nested_heading_list
+		$hierarchical_heading_list
 	);
 
 	return '<ul>' . implode( $child_nodes ) . '</ul>';
@@ -312,7 +312,7 @@ function render_block_core_table_of_contents( $attributes, $content, $block ) {
 		'<nav class="%1$s">%2$s</nav>',
 		get_block_wrapper_attributes(),
 		block_core_table_of_contents_render_list(
-			block_core_table_of_contents_linear_to_nested_heading_list( $headings )
+			block_core_table_of_contents_get_hierarchical_heading_list( $headings )
 		)
 	);
 }
