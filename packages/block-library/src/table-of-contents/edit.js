@@ -7,13 +7,21 @@ import { isEqual } from 'lodash';
  * WordPress dependencies
  */
 import {
+	BlockControls,
 	BlockIcon,
 	InspectorControls,
 	useBlockProps,
 } from '@wordpress/block-editor';
-import { PanelBody, Placeholder, ToggleControl } from '@wordpress/components';
-import { useSelect } from '@wordpress/data';
-import { useEffect, useState } from '@wordpress/element';
+import { createBlock } from '@wordpress/blocks';
+import {
+	PanelBody,
+	Placeholder,
+	ToggleControl,
+	ToolbarButton,
+	ToolbarGroup,
+} from '@wordpress/components';
+import { useDispatch, useSelect } from '@wordpress/data';
+import { renderToString, useEffect, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -44,6 +52,7 @@ export default function TableOfContentsEdit( {
 
 	// Local state; not saved to block attributes. The saved block is dynamic and uses PHP to generate its content.
 	const [ headings, setHeadings ] = useState( [] );
+	const [ headingTree, setHeadingTree ] = useState( [] );
 
 	const postContent = useSelect(
 		( select ) => select( 'core/editor' ).getEditedPostContent(),
@@ -113,8 +122,35 @@ export default function TableOfContentsEdit( {
 
 		if ( ! isEqual( headings, latestHeadings ) ) {
 			setHeadings( latestHeadings );
+			setHeadingTree( linearToNestedHeadingList( latestHeadings ) );
 		}
 	}, [ pageIndex, postContent, onlyIncludeCurrentPage ] );
+
+	const { replaceBlocks } = useDispatch( 'core/block-editor' );
+
+	const toolbarControls = (
+		<BlockControls>
+			<ToolbarGroup>
+				<ToolbarButton
+					onClick={ () =>
+						replaceBlocks(
+							clientId,
+							createBlock( 'core/list', {
+								values: renderToString(
+									<TableOfContentsList
+										wrapList={ false }
+										nestedHeadingList={ headingTree }
+									/>
+								),
+							} )
+						)
+					}
+				>
+					{ __( 'Convert to static list' ) }
+				</ToolbarButton>
+			</ToolbarGroup>
+		</BlockControls>
+	);
 
 	const inspectorControls = (
 		<InspectorControls>
@@ -140,27 +176,32 @@ export default function TableOfContentsEdit( {
 	);
 
 	// If there are no headings or the only heading is empty.
+	// Note that the toolbar controls are intentionally omitted since the
+	// "Convert to static list" option is useless to the placeholder state.
 	if ( headings.length === 0 ) {
 		return (
-			<div { ...blockProps }>
+			<>
+				<div { ...blockProps }>
+					<Placeholder
+						icon={ <BlockIcon icon="list-view" /> }
+						label="Table of Contents"
+						instructions={ __(
+							'Start adding Heading blocks to create a table of contents. Headings with HTML anchors will be linked here.'
+						) }
+					/>
+				</div>
 				{ inspectorControls }
-				<Placeholder
-					icon={ <BlockIcon icon="list-view" /> }
-					label="Table of Contents"
-					instructions={ __(
-						'Start adding Heading blocks to create a table of contents. Headings with HTML anchors will be linked here.'
-					) }
-				/>
-			</div>
+			</>
 		);
 	}
 
 	return (
-		<nav { ...blockProps }>
+		<>
+			<nav { ...blockProps }>
+				<TableOfContentsList nestedHeadingList={ headingTree } />
+			</nav>
+			{ toolbarControls }
 			{ inspectorControls }
-			<TableOfContentsList
-				nestedHeadingList={ linearToNestedHeadingList( headings ) }
-			/>
-		</nav>
+		</>
 	);
 }
