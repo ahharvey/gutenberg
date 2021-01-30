@@ -104,7 +104,6 @@ function block_core_table_of_contents_get_headings_from_content(
 			}
 
 			return array(
-				'page'    => $headings_page,
 				// A little hacky, but since we know at this point that the tag will
 				// be an h1-h6, we can just grab the 2nd character of the tag name
 				// and convert it to an integer. Should be faster than conditionals.
